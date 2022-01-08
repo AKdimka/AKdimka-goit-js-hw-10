@@ -12,17 +12,20 @@ const refs = {
 	countryList: document.querySelector('.country-list')
 }
 
-refs.input.addEventListener('input', search);
+refs.input.addEventListener('input', debounce(search, DEBOUNCE_DELAY), {
+	leading: true,
+	trailing: false,
+});
 
 function search(e) {
 	e.preventDefault();
 
-	let inputText = e.currentTarget.value.toLowerCase();
+	let inputText = e.target.value.trim().toLowerCase();
 
 	fetchCountries(inputText)
 		.then(renderCountryInfo)
 		.catch(
-			Notiflix.Notify.failure('Oops, there is no country with that name')
+			Notiflix.Notify.failure("Oops, there is no country with that name")
 		)
 }
 
@@ -32,11 +35,23 @@ function fetchCountries(inputText) {
 };
 
 function renderCountryInfo(country) {
-	if (country.length === 1) {
-		const murkup = countryTpl(country);
-		refs.infoContainer.insertAdjacentHTML('beforeend', murkup);
-	} else {
+	console.log(country.length);
+	console.log(country);
+
+	refs.infoContainer.textContent = '';
+	refs.countryList.textContent = '';
+
+	if (country.length > 10) {
+		Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+	}
+
+	else if (country.length > 2 && country.length < 10) {
 		const murkupList = countryListTpl(country);
 		refs.countryList.insertAdjacentHTML('beforeend', murkupList);
+	}
+
+	else if (country.length < 2) {
+		const murkup = countryTpl(country);
+		refs.infoContainer.insertAdjacentHTML('beforeend', murkup);
 	}
 }
