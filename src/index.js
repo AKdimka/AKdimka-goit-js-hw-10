@@ -3,6 +3,7 @@ import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
 import countryTpl from './templates/country.hbs';
 import countryListTpl from './templates/country-list.hbs';
+import fetchCountries from './js/fetchCountries'
 
 const DEBOUNCE_DELAY = 300;
 
@@ -22,6 +23,12 @@ function search(e) {
 
 	let inputText = e.target.value.trim().toLowerCase();
 
+	if (!inputText) {
+		refs.infoContainer.textContent = '';
+		refs.countryList.textContent = '';
+		return
+	}
+
 	fetchCountries(inputText)
 		.then(renderCountryInfo)
 		.catch(error => {
@@ -29,16 +36,6 @@ function search(e) {
 		})
 }
 
-function fetchCountries(inputText) {
-	return fetch(`https://restcountries.com/v2/name/${inputText}?fields=name,capital,population,flags,languages`)
-		.then(response => {
-			if (!response.ok) {
-				throw new Error(response.status);
-			}
-			return response.json()
-		}
-		)
-};
 
 function renderCountryInfo(country) {
 	console.log(country.length);
@@ -51,12 +48,12 @@ function renderCountryInfo(country) {
 		Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
 	}
 
-	else if (country.length > 2 && country.length < 10) {
+	else if (country.length > 1 && country.length < 10) {
 		const murkupList = countryListTpl(country);
 		refs.countryList.insertAdjacentHTML('beforeend', murkupList);
 	}
 
-	else if (country.length < 2) {
+	else {
 		const murkup = countryTpl(country);
 		refs.infoContainer.insertAdjacentHTML('beforeend', murkup);
 	}
