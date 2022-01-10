@@ -24,14 +24,20 @@ function search(e) {
 
 	fetchCountries(inputText)
 		.then(renderCountryInfo)
-		.catch(
+		.catch(error => {
 			Notiflix.Notify.failure("Oops, there is no country with that name")
-		)
+		})
 }
 
 function fetchCountries(inputText) {
 	return fetch(`https://restcountries.com/v2/name/${inputText}?fields=name,capital,population,flags,languages`)
-		.then(response => response.json())
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(response.status);
+			}
+			return response.json()
+		}
+		)
 };
 
 function renderCountryInfo(country) {
